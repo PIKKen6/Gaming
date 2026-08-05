@@ -30,7 +30,6 @@
             margin: 0 auto;
         }
         
-        /* Style du formulaire */
         .form-container {
             background-color: var(--card-bg);
             padding: 20px;
@@ -45,8 +44,9 @@
             display: block;
             margin-bottom: 5px;
             color: var(--text-muted);
+            font-weight: bold;
         }
-        input, select, textarea {
+        input[type="text"], input[type="url"], select, textarea {
             width: 100%;
             padding: 10px;
             border: 1px solid #333;
@@ -56,7 +56,94 @@
             box-sizing: border-box;
         }
 
-        /* NOUVEAU STYLE DU BOUTON D'AJOUT */
+        /* Style des curseurs (Sliders) */
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+            margin: 10px 0;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 20px;
+            width: 20px;
+            border-radius: 50%;
+            background: var(--accent);
+            cursor: pointer;
+            margin-top: -7px;
+            box-shadow: 0 0 5px rgba(187, 134, 252, 0.5);
+        }
+        input[type="range"]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 6px;
+            cursor: pointer;
+            background: #333;
+            border-radius: 3px;
+        }
+
+        /* Ligne de notation globale */
+        .rating-row {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+        .rating-value {
+            font-size: 1.2em;
+            color: var(--accent);
+            font-weight: bold;
+            min-width: 60px;
+        }
+
+        /* Boutons secondaires */
+        .btn-secondary {
+            background-color: #333;
+            color: white;
+            border: 1px solid #555;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: 0.2s;
+            white-space: nowrap;
+        }
+        .btn-secondary:hover {
+            background-color: #444;
+            border-color: var(--accent);
+        }
+
+        /* Panneau de calcul détaillé */
+        #detailed-calc {
+            display: none;
+            background-color: #242424;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px dashed #555;
+            margin-top: 10px;
+            margin-bottom: 15px;
+        }
+        #detailed-calc h4 {
+            margin-top: 0;
+            color: var(--accent);
+        }
+        .calc-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .calc-label {
+            width: 150px;
+            font-size: 0.9em;
+            color: var(--text-muted);
+        }
+        .calc-val {
+            width: 40px;
+            text-align: right;
+            color: white;
+            font-weight: bold;
+        }
+
+        /* Bouton principal */
         button[type="submit"] {
             background: linear-gradient(45deg, #bb86fc, #7c4dff);
             color: white;
@@ -69,23 +156,15 @@
             width: 100%;
             transition: all 0.3s ease;
             box-shadow: 0 4px 15px rgba(187, 134, 252, 0.3);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
+            margin-top: 10px;
         }
-
         button[type="submit"]:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(187, 134, 252, 0.6);
             background: linear-gradient(45deg, #cda4fd, #8c62ff);
         }
 
-        button[type="submit"]:active {
-            transform: translateY(1px) scale(0.98);
-        }
-
-        /* Style de la grille et des cartes */
+        /* Grille et cartes */
         .grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -119,6 +198,7 @@
             color: gold;
             margin-bottom: 10px;
             font-weight: bold;
+            font-size: 1.1em;
         }
         .comment {
             font-size: 0.9em;
@@ -126,6 +206,7 @@
             margin-bottom: 15px;
             line-height: 1.4;
             flex-grow: 1;
+            white-space: pre-wrap;
         }
         .card-actions {
             display: flex;
@@ -147,10 +228,8 @@
             color: var(--danger);
             border: 1px solid var(--danger);
             padding: 8px 12px;
-            width: auto;
             border-radius: 5px;
             cursor: pointer;
-            transition: all 0.2s;
         }
         .btn-delete:hover {
             background-color: var(--danger);
@@ -179,18 +258,58 @@
                 </div>
                 <div class="form-group">
                     <label for="status">Catégorie</label>
-                    <select id="status">
+                    <select id="status" onchange="toggleRatingSection()">
                         <option value="finished">Jeu Terminé</option>
                         <option value="todo">Jeu À Faire</option>
                     </select>
                 </div>
-                <div class="form-group">
-                    <label for="rating">Note (ex: 5/5) - Optionnel</label>
-                    <input type="text" id="rating">
+                
+                <!-- Zone de notation -->
+                <div class="form-group" id="rating-section">
+                    <label>Note globale sur 100</label>
+                    <div class="rating-row">
+                        <input type="range" id="rating" min="0" max="100" value="50" oninput="updateMainRating(this.value)">
+                        <span class="rating-value"><span id="rating-display">50</span>/100</span>
+                        <button type="button" class="btn-secondary" onclick="toggleDetailedCalc()">Détails ▾</button>
+                    </div>
+
+                    <!-- Calcul détaillé caché -->
+                    <div id="detailed-calc">
+                        <h4>Calcul de la note détaillée</h4>
+                        
+                        <div class="calc-row">
+                            <span class="calc-label">Graphismes</span>
+                            <input type="range" id="calc-gfx" min="0" max="100" value="50" oninput="updateSubRating('gfx', this.value)">
+                            <span class="calc-val" id="val-gfx">50</span>
+                        </div>
+                        <div class="calc-row">
+                            <span class="calc-label">Gameplay</span>
+                            <input type="range" id="calc-gp" min="0" max="100" value="50" oninput="updateSubRating('gp', this.value)">
+                            <span class="calc-val" id="val-gp">50</span>
+                        </div>
+                        <div class="calc-row">
+                            <span class="calc-label">Scénario</span>
+                            <input type="range" id="calc-hist" min="0" max="100" value="50" oninput="updateSubRating('hist', this.value)">
+                            <span class="calc-val" id="val-hist">50</span>
+                        </div>
+                        <div class="calc-row">
+                            <span class="calc-label">Bande-son</span>
+                            <input type="range" id="calc-snd" min="0" max="100" value="50" oninput="updateSubRating('snd', this.value)">
+                            <span class="calc-val" id="val-snd">50</span>
+                        </div>
+                        <div class="calc-row">
+                            <span class="calc-label">Durée de vie</span>
+                            <input type="range" id="calc-dur" min="0" max="100" value="50" oninput="updateSubRating('dur', this.value)">
+                            <span class="calc-val" id="val-dur">50</span>
+                        </div>
+                        
+                        <button type="button" class="btn-secondary" style="width: 100%; margin-top: 10px;" onclick="applyDetailedRating()">Calculer et Appliquer la moyenne</button>
+                    </div>
                 </div>
+
                 <div class="form-group">
-                    <label for="comment">Commentaire / Avis</label>
-                    <textarea id="comment" rows="3" required></textarea>
+                    <label for="comment">Commentaire / Avis détaillé</label>
+                    <textarea id="comment" rows="4" required></textarea>
                 </div>
                 <button type="submit">➕ Ajouter à ma liste</button>
             </form>
@@ -207,6 +326,56 @@
         document.addEventListener('DOMContentLoaded', loadGames);
         document.getElementById('game-form').addEventListener('submit', addGame);
 
+        // Affiche ou masque la notation selon si le jeu est terminé ou à faire
+        function toggleRatingSection() {
+            const status = document.getElementById('status').value;
+            const ratingSection = document.getElementById('rating-section');
+            if (status === 'todo') {
+                ratingSection.style.display = 'none';
+            } else {
+                ratingSection.style.display = 'block';
+            }
+        }
+
+        // Met à jour l'affichage de la note globale
+        function updateMainRating(val) {
+            document.getElementById('rating-display').textContent = val;
+        }
+
+        // Affiche ou masque le panneau de calcul détaillé
+        function toggleDetailedCalc() {
+            const panel = document.getElementById('detailed-calc');
+            if (panel.style.display === 'block') {
+                panel.style.display = 'none';
+            } else {
+                panel.style.display = 'block';
+            }
+        }
+
+        // Met à jour l'affichage d'un critère spécifique
+        function updateSubRating(id, val) {
+            document.getElementById('val-' + id).textContent = val;
+        }
+
+        // Calcule la moyenne des 5 critères et met à jour la note globale
+        function applyDetailedRating() {
+            const gfx = parseInt(document.getElementById('calc-gfx').value);
+            const gp = parseInt(document.getElementById('calc-gp').value);
+            const hist = parseInt(document.getElementById('calc-hist').value);
+            const snd = parseInt(document.getElementById('calc-snd').value);
+            const dur = parseInt(document.getElementById('calc-dur').value);
+
+            const average = Math.round((gfx + gp + hist + snd + dur) / 5);
+            
+            // Mise à jour du curseur principal
+            document.getElementById('rating').value = average;
+            updateMainRating(average);
+            
+            // Fermeture du panneau
+            toggleDetailedCalc();
+        }
+
+        // Chargement des jeux sauvegardés
         function loadGames() {
             const games = JSON.parse(localStorage.getItem('mesJeux')) || [];
             const finishedGrid = document.getElementById('finished-grid');
@@ -225,12 +394,12 @@
                         <h3 class="card-title">${game.title}</h3>
                 `;
                 
-                if (game.status === 'finished' && game.rating) {
-                    cardHTML += `<div class="rating">⭐ ${game.rating}</div>`;
+                if (game.status === 'finished') {
+                    cardHTML += `<div class="rating">🏆 ${game.rating}/100</div>`;
                 }
                 
                 cardHTML += `
-                        <div class="comment">"${game.comment}"</div>
+                        <div class="comment">${game.comment}</div>
                         <div class="card-actions">
                 `;
                 
@@ -256,6 +425,7 @@
             });
         }
 
+        // Ajout d'un nouveau jeu
         function addGame(e) {
             e.preventDefault();
             
@@ -272,10 +442,22 @@
             games.push(newGame);
             localStorage.setItem('mesJeux', JSON.stringify(games));
 
+            // Réinitialiser le formulaire
             document.getElementById('game-form').reset();
+            updateMainRating(50); // Remettre l'affichage à 50
+            toggleRatingSection(); // Vérifier l'affichage de la zone de note
+            
+            // Remettre les curseurs détaillés à 50
+            ['gfx', 'gp', 'hist', 'snd', 'dur'].forEach(id => {
+                document.getElementById('calc-' + id).value = 50;
+                document.getElementById('val-' + id).textContent = 50;
+            });
+            document.getElementById('detailed-calc').style.display = 'none';
+
             loadGames();
         }
 
+        // Suppression d'un jeu
         function deleteGame(index) {
             if (confirm("Veux-tu vraiment supprimer ce jeu de ta liste ?")) {
                 const games = JSON.parse(localStorage.getItem('mesJeux')) || [];
