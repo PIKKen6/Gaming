@@ -11,6 +11,7 @@
             --text-main: #ffffff;
             --text-muted: #aaaaaa;
             --accent: #bb86fc;
+            --danger: #cf6679;
         }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -28,6 +29,48 @@
             max-width: 1200px;
             margin: 0 auto;
         }
+        
+        /* Style du formulaire */
+        .form-container {
+            background-color: var(--card-bg);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 40px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: var(--text-muted);
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #333;
+            border-radius: 5px;
+            background-color: #2c2c2c;
+            color: white;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: var(--accent);
+            color: var(--bg-color);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1em;
+            width: 100%;
+        }
+        button:hover {
+            opacity: 0.9;
+        }
+
+        /* Style de la grille et des cartes */
         .grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -39,10 +82,8 @@
             border-radius: 10px;
             overflow: hidden;
             box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-            transition: transform 0.2s;
-        }
-        .card:hover {
-            transform: translateY(-5px);
+            display: flex;
+            flex-direction: column;
         }
         .card img {
             width: 100%;
@@ -51,6 +92,9 @@
         }
         .card-content {
             padding: 15px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
         }
         .card-title {
             margin: 0 0 10px 0;
@@ -66,9 +110,15 @@
             color: var(--text-muted);
             margin-bottom: 15px;
             line-height: 1.4;
+            flex-grow: 1;
+        }
+        .card-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
         }
         .link {
-            display: inline-block;
             text-decoration: none;
             color: var(--bg-color);
             background-color: var(--accent);
@@ -77,8 +127,16 @@
             font-weight: bold;
             font-size: 0.9em;
         }
-        .link:hover {
-            opacity: 0.9;
+        .btn-delete {
+            background-color: transparent;
+            color: var(--danger);
+            border: 1px solid var(--danger);
+            padding: 8px 12px;
+            width: auto;
+        }
+        .btn-delete:hover {
+            background-color: var(--danger);
+            color: white;
         }
     </style>
 </head>
@@ -86,36 +144,141 @@
     <div class="container">
         <h1>🎮 Ma Bibliothèque de Jeux</h1>
         
-        <h2>Jeux Terminés</h2>
-        <div class="grid">
-            <!-- CARTE JEU TERMINÉ -->
-            <div class="card">
-                <img src="URL_DE_TON_IMAGE_ICI" alt="Image du jeu">
-                <div class="card-content">
-                    <h3 class="card-title">Nom du Jeu</h3>
-                    <div class="rating">⭐⭐⭐⭐⭐ 5/5</div>
-                    <div class="comment">"Mon avis ou mes notes sur ce jeu. Très bonne expérience globale."</div>
-                    <a href="LIEN_VERS_LE_JEU" class="link" target="_blank">Lien vers le jeu</a>
+        <div class="form-container">
+            <h2>Ajouter un nouveau jeu</h2>
+            <form id="game-form">
+                <div class="form-group">
+                    <label for="title">Titre du jeu</label>
+                    <input type="text" id="title" required>
                 </div>
-            </div>
-            <!-- FIN CARTE JEU TERMINÉ -->
-            
-            <!-- Pour ajouter un autre jeu, copie-colle le bloc au-dessus ici -->
+                <div class="form-group">
+                    <label for="image">Lien de l'image (URL)</label>
+                    <input type="url" id="image" required>
+                </div>
+                <div class="form-group">
+                    <label for="link">Lien vers le jeu (optionnel)</label>
+                    <input type="url" id="link">
+                </div>
+                <div class="form-group">
+                    <label for="status">Catégorie</label>
+                    <select id="status">
+                        <option value="finished">Jeu Terminé</option>
+                        <option value="todo">Jeu À Faire</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="rating">Note (ex: 5/5) - Optionnel</label>
+                    <input type="text" id="rating">
+                </div>
+                <div class="form-group">
+                    <label for="comment">Commentaire / Avis</label>
+                    <textarea id="comment" rows="3" required></textarea>
+                </div>
+                <button type="submit">Ajouter à ma liste</button>
+            </form>
+        </div>
+
+        <h2>Jeux Terminés</h2>
+        <div class="grid" id="finished-grid">
+            <!-- Les jeux terminés s'afficheront ici -->
         </div>
 
         <h2>Jeux à Faire</h2>
-        <div class="grid">
-            <!-- CARTE JEU À FAIRE -->
-            <div class="card">
-                <img src="URL_DE_TON_IMAGE_ICI" alt="Image du jeu">
-                <div class="card-content">
-                    <h3 class="card-title">Nom du Jeu Attendu</h3>
-                    <div class="comment">Ce qui m'attire dans ce jeu ou sa date de sortie.</div>
-                    <a href="LIEN_VERS_LE_JEU" class="link" target="_blank">Lien vers le jeu</a>
-                </div>
-            </div>
-            <!-- FIN CARTE JEU À FAIRE -->
+        <div class="grid" id="todo-grid">
+            <!-- Les jeux à faire s'afficheront ici -->
         </div>
     </div>
+
+    <script>
+        // Charger les jeux au démarrage de la page
+        document.addEventListener('DOMContentLoaded', loadGames);
+        
+        // Écouter la validation du formulaire
+        document.getElementById('game-form').addEventListener('submit', addGame);
+
+        function loadGames() {
+            const games = JSON.parse(localStorage.getItem('mesJeux')) || [];
+            const finishedGrid = document.getElementById('finished-grid');
+            const todoGrid = document.getElementById('todo-grid');
+
+            // Vider les grilles avant de les remplir
+            finishedGrid.innerHTML = '';
+            todoGrid.innerHTML = '';
+
+            games.forEach((game, index) => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                
+                // Construire le contenu de la carte
+                let cardHTML = `
+                    <img src="${game.image}" alt="${game.title}">
+                    <div class="card-content">
+                        <h3 class="card-title">${game.title}</h3>
+                `;
+                
+                if (game.status === 'finished' && game.rating) {
+                    cardHTML += `<div class="rating">⭐ ${game.rating}</div>`;
+                }
+                
+                cardHTML += `
+                        <div class="comment">"${game.comment}"</div>
+                        <div class="card-actions">
+                `;
+                
+                if (game.link) {
+                    cardHTML += `<a href="${game.link}" class="link" target="_blank">Voir</a>`;
+                } else {
+                    cardHTML += `<span></span>`; // Espace vide pour aligner le bouton supprimer
+                }
+
+                cardHTML += `
+                            <button onclick="deleteGame(${index})" class="btn-delete">Supprimer</button>
+                        </div>
+                    </div>
+                `;
+                
+                card.innerHTML = cardHTML;
+
+                // Ajouter la carte dans la bonne catégorie
+                if (game.status === 'finished') {
+                    finishedGrid.appendChild(card);
+                } else {
+                    todoGrid.appendChild(card);
+                }
+            });
+        }
+
+        function addGame(e) {
+            e.preventDefault(); // Empêcher la page de se recharger
+            
+            // Récupérer les données du formulaire
+            const newGame = {
+                title: document.getElementById('title').value,
+                image: document.getElementById('image').value,
+                link: document.getElementById('link').value,
+                status: document.getElementById('status').value,
+                rating: document.getElementById('rating').value,
+                comment: document.getElementById('comment').value
+            };
+
+            // Récupérer la liste existante, ajouter le nouveau jeu, et sauvegarder
+            const games = JSON.parse(localStorage.getItem('mesJeux')) || [];
+            games.push(newGame);
+            localStorage.setItem('mesJeux', JSON.stringify(games));
+
+            // Vider le formulaire et recharger l'affichage
+            document.getElementById('game-form').reset();
+            loadGames();
+        }
+
+        function deleteGame(index) {
+            if (confirm("Veux-tu vraiment supprimer ce jeu de ta liste ?")) {
+                const games = JSON.parse(localStorage.getItem('mesJeux')) || [];
+                games.splice(index, 1); // Retirer le jeu de la liste
+                localStorage.setItem('mesJeux', JSON.stringify(games));
+                loadGames(); // Recharger l'affichage
+            }
+        }
+    </script>
 </body>
 </html>
