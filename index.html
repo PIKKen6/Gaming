@@ -55,19 +55,34 @@
             color: white;
             box-sizing: border-box;
         }
-        button {
-            background-color: var(--accent);
-            color: var(--bg-color);
+
+        /* NOUVEAU STYLE DU BOUTON D'AJOUT */
+        button[type="submit"] {
+            background: linear-gradient(45deg, #bb86fc, #7c4dff);
+            color: white;
             border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
+            padding: 12px 20px;
+            border-radius: 8px;
             cursor: pointer;
             font-weight: bold;
-            font-size: 1em;
+            font-size: 1.1em;
             width: 100%;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(187, 134, 252, 0.3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
         }
-        button:hover {
-            opacity: 0.9;
+
+        button[type="submit"]:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(187, 134, 252, 0.6);
+            background: linear-gradient(45deg, #cda4fd, #8c62ff);
+        }
+
+        button[type="submit"]:active {
+            transform: translateY(1px) scale(0.98);
         }
 
         /* Style de la grille et des cartes */
@@ -133,6 +148,9 @@
             border: 1px solid var(--danger);
             padding: 8px 12px;
             width: auto;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
         }
         .btn-delete:hover {
             background-color: var(--danger);
@@ -174,26 +192,19 @@
                     <label for="comment">Commentaire / Avis</label>
                     <textarea id="comment" rows="3" required></textarea>
                 </div>
-                <button type="submit">Ajouter à ma liste</button>
+                <button type="submit">➕ Ajouter à ma liste</button>
             </form>
         </div>
 
         <h2>Jeux Terminés</h2>
-        <div class="grid" id="finished-grid">
-            <!-- Les jeux terminés s'afficheront ici -->
-        </div>
+        <div class="grid" id="finished-grid"></div>
 
         <h2>Jeux à Faire</h2>
-        <div class="grid" id="todo-grid">
-            <!-- Les jeux à faire s'afficheront ici -->
-        </div>
+        <div class="grid" id="todo-grid"></div>
     </div>
 
     <script>
-        // Charger les jeux au démarrage de la page
         document.addEventListener('DOMContentLoaded', loadGames);
-        
-        // Écouter la validation du formulaire
         document.getElementById('game-form').addEventListener('submit', addGame);
 
         function loadGames() {
@@ -201,7 +212,6 @@
             const finishedGrid = document.getElementById('finished-grid');
             const todoGrid = document.getElementById('todo-grid');
 
-            // Vider les grilles avant de les remplir
             finishedGrid.innerHTML = '';
             todoGrid.innerHTML = '';
 
@@ -209,7 +219,6 @@
                 const card = document.createElement('div');
                 card.className = 'card';
                 
-                // Construire le contenu de la carte
                 let cardHTML = `
                     <img src="${game.image}" alt="${game.title}">
                     <div class="card-content">
@@ -228,7 +237,7 @@
                 if (game.link) {
                     cardHTML += `<a href="${game.link}" class="link" target="_blank">Voir</a>`;
                 } else {
-                    cardHTML += `<span></span>`; // Espace vide pour aligner le bouton supprimer
+                    cardHTML += `<span></span>`;
                 }
 
                 cardHTML += `
@@ -239,7 +248,6 @@
                 
                 card.innerHTML = cardHTML;
 
-                // Ajouter la carte dans la bonne catégorie
                 if (game.status === 'finished') {
                     finishedGrid.appendChild(card);
                 } else {
@@ -249,9 +257,8 @@
         }
 
         function addGame(e) {
-            e.preventDefault(); // Empêcher la page de se recharger
+            e.preventDefault();
             
-            // Récupérer les données du formulaire
             const newGame = {
                 title: document.getElementById('title').value,
                 image: document.getElementById('image').value,
@@ -261,12 +268,10 @@
                 comment: document.getElementById('comment').value
             };
 
-            // Récupérer la liste existante, ajouter le nouveau jeu, et sauvegarder
             const games = JSON.parse(localStorage.getItem('mesJeux')) || [];
             games.push(newGame);
             localStorage.setItem('mesJeux', JSON.stringify(games));
 
-            // Vider le formulaire et recharger l'affichage
             document.getElementById('game-form').reset();
             loadGames();
         }
@@ -274,9 +279,9 @@
         function deleteGame(index) {
             if (confirm("Veux-tu vraiment supprimer ce jeu de ta liste ?")) {
                 const games = JSON.parse(localStorage.getItem('mesJeux')) || [];
-                games.splice(index, 1); // Retirer le jeu de la liste
+                games.splice(index, 1);
                 localStorage.setItem('mesJeux', JSON.stringify(games));
-                loadGames(); // Recharger l'affichage
+                loadGames();
             }
         }
     </script>
