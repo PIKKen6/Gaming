@@ -7,7 +7,7 @@
     <style>
         :root {
             --bg-color: #121212;
-            --card-bg: rgba(30, 30, 30, 0.85); /* Légèrement transparent pour voir la vidéo */
+            --card-bg: rgba(30, 30, 30, 0.85);
             --text-main: #ffffff;
             --text-muted: #aaaaaa;
             --accent: #bb86fc;
@@ -30,7 +30,6 @@
             background-color: transparent;
         }
 
-        /* VIDÉO EN ARRIÈRE-PLAN */
         .video-background {
             position: fixed;
             top: 0;
@@ -50,7 +49,7 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            opacity: 0.15; /* Transparence pour garder le texte lisible */
+            opacity: 0.15;
         }
 
         h1, h2 {
@@ -64,7 +63,6 @@
             margin: 0 auto;
         }
 
-        /* BOUTON FLOTTANT D'AJOUT */
         .fab-add {
             position: fixed; bottom: 30px; right: 30px;
             background: linear-gradient(45deg, #bb86fc, #7c4dff);
@@ -75,7 +73,6 @@
         }
         .fab-add:hover { transform: scale(1.1); box-shadow: 0 6px 20px rgba(187, 134, 252, 0.6); }
 
-        /* FENÊTRE POP-UP (MODAL) */
         .modal-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.8); z-index: 1000; justify-content: center;
@@ -92,7 +89,6 @@
         }
         .close-btn:hover { color: var(--danger); }
 
-        /* FORMULAIRE */
         .form-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 5px; color: var(--text-muted); font-weight: bold; }
         input[type="text"], input[type="url"], select, textarea {
@@ -141,7 +137,6 @@
         }
         button[type="submit"]:hover { background: linear-gradient(45deg, #cda4fd, #8c62ff); }
 
-        /* GRILLES ET CARTES */
         .grid {
             display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 20px; margin-bottom: 50px;
@@ -168,7 +163,6 @@
         .btn-delete { background-color: transparent; color: var(--danger); border: 1px solid var(--danger); }
         .btn-delete:hover { background-color: var(--danger); color: white; }
 
-        /* BADGES */
         .rank-badge {
             position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.8);
             padding: 5px 12px; border-radius: 20px; font-size: 1.5em; font-weight: bold;
@@ -184,7 +178,6 @@
 </head>
 <body>
 
-    <!-- LECTEUR VIDÉO YOUTUBE EN FOND -->
     <div class="video-background" id="video-bg-container"></div>
 
     <button class="fab-add" onclick="openModal()">+</button>
@@ -209,11 +202,6 @@
                     <label for="image">Lien de l'image (URL)</label>
                     <input type="url" id="image" required oninput="updateImagePreview()">
                     <img id="image-preview" src="" alt="Aperçu du jeu">
-                </div>
-
-                <div class="form-group">
-                    <label for="trailer">Lien YouTube du trailer (Pour la vidéo de fond)</label>
-                    <input type="url" id="trailer" placeholder="ex: https://www.youtube.com/watch?v=...">
                 </div>
 
                 <div class="form-group">
@@ -304,11 +292,15 @@
     </div>
 
     <script>
+        // =========================================================================
+        // METS TA CLÉ YOUTUBE API ICI
+        const YOUTUBE_API_KEY = 'AIzaSyBWN_AieO-ZDGnzhLUK_1-Jv2CIurd1jTA';
+        // =========================================================================
+
         document.addEventListener('DOMContentLoaded', loadGames);
         document.getElementById('game-form').addEventListener('submit', saveGame);
         const categories = ['gfx', 'gp', 'hist', 'snd', 'dur', 'amb', 'orig', 'rep'];
 
-        /* RECHERCHE AUTOMATIQUE D'IMAGE VIA API SANS CLÉ */
         async function autoFillImage() {
             const titleInput = document.getElementById('title');
             const title = titleInput.value.trim();
@@ -342,7 +334,6 @@
                 }
             } catch (error) {
                 alert("Erreur de connexion à la base de données.");
-                console.error(error);
             }
         }
 
@@ -358,7 +349,6 @@
             }
         }
 
-        /* GESTION DE LA MODALE */
         function openModal(editId = null) {
             document.getElementById('modal').style.display = 'flex';
             const form = document.getElementById('game-form');
@@ -372,7 +362,6 @@
                     document.getElementById('edit-id').value = game.id;
                     document.getElementById('title').value = game.title;
                     document.getElementById('image').value = game.image;
-                    document.getElementById('trailer').value = game.trailer || '';
                     document.getElementById('link').value = game.link || '';
                     document.getElementById('status').value = game.status;
                     
@@ -432,33 +421,31 @@
             toggleDetailedCalc();
         }
 
-        /* EXTRACTION ID YOUTUBE */
-        function getYouTubeId(url) {
-            if (!url) return null;
-            const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=))([^"&?\/\s]{11})/);
-            return match ? match[1] : null;
-        }
-
-        /* GESTION DE LA VIDÉO EN ARRIÈRE-PLAN */
-        function setBackgroundVideo(top10Games) {
+        async function setBackgroundVideo(top10Games) {
             const container = document.getElementById('video-bg-container');
-            
-            // Trouver les jeux du Top 10 qui possèdent un lien vidéo valide
-            const gamesWithTrailer = top10Games.filter(g => getYouTubeId(g.trailer));
-            
-            // Vidéo par défaut si aucun jeu n'a de lien (Trailer générique très visuel)
-            let videoId = "8X2kIfS6fb8"; 
+            let videoId = "8X2kIfS6fb8"; // Vidéo de secours (Cyberpunk)
 
-            if (gamesWithTrailer.length > 0) {
-                // Choisir un jeu au hasard parmi ceux qui ont un trailer
-                const randomGame = gamesWithTrailer[Math.floor(Math.random() * gamesWithTrailer.length)];
-                videoId = getYouTubeId(randomGame.trailer);
+            if (top10Games.length > 0) {
+                const randomGame = top10Games[Math.floor(Math.random() * top10Games.length)];
+                
+                if (YOUTUBE_API_KEY !== 'METS_TA_CLE_YOUTUBE_ICI') {
+                    try {
+                        const searchQuery = encodeURIComponent(randomGame.title + " official trailer");
+                        const response = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${searchQuery}&type=video&key=${YOUTUBE_API_KEY}&maxResults=1`);
+                        const data = await response.json();
+                        
+                        if (data.items && data.items.length > 0) {
+                            videoId = data.items[0].id.videoId;
+                        }
+                    } catch (error) {
+                        console.error("Erreur avec l'API YouTube", error);
+                    }
+                }
             }
 
             container.innerHTML = `<iframe src="https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${videoId}&showinfo=0&rel=0&iv_load_policy=3" frameborder="0" allowfullscreen></iframe>`;
         }
 
-        /* GESTION DES DONNÉES ET AFFICHAGE */
         function loadGames() {
             let games = JSON.parse(localStorage.getItem('mesJeux')) || [];
             
@@ -475,7 +462,6 @@
 
             const top10 = finishedGames.slice(0, 10);
             
-            // Lancer la vidéo en fond
             setBackgroundVideo(top10);
 
             const top3 = finishedGames.slice(0, 3);
@@ -542,7 +528,6 @@
             const gameData = {
                 title: document.getElementById('title').value,
                 image: document.getElementById('image').value,
-                trailer: document.getElementById('trailer').value,
                 link: document.getElementById('link').value,
                 status: document.getElementById('status').value,
                 rating: parseFloat(document.getElementById('rating').value),
